@@ -30,19 +30,15 @@ app.get('*',(req,res)=>{
 });
 
 
-app.get('/server/pizzas',(req,res)=>{
-    res.send({pizza:"its yummy"});
-})
-
 /**
  * Create app server on port:properties.port 
  */
-app.set('port','8080');
+app.set('port','3000');
 const server =http.createServer(app);
 
 /**
  * Listen on properties.port.
  */
-server.listen('8080',()=>{
-    console.log('Server running on port : 8080..');
+server.listen('3000',()=>{
+    console.log('Server running on port : 3000..');
 });

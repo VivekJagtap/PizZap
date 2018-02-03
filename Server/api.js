@@ -19,5 +19,12 @@ router.get(`${requestMapping}/pizzas`,(req,res)=>{
     res.send(serverData.pizzas);
 });
 
+
+router.post(`${requestMapping}/order`,(req,res)=>{
+    serverData.orders.push(req.body);
+    console.log('orders'+JSON.stringify(serverData.orders));
+    res.send('30');
+});
+
 module.exports = router;
 

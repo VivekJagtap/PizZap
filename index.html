@@ -9,11 +9,122 @@
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+
 </head>
 <body ng-app="PizZap">
     <div class="container-fluid" ng-controller="appController">
-        <p>these are pizzas: {{pizzas}}</p>
-    
+        <md-toolbar class="md-primary">
+            <div class="md-toolbar-tools">
+              <h2 class="md-flex">PIZ-ZAP - You can order Pizzas here</h2>
+            </div>
+        </md-toolbar>
+        <md-content flex layout-padding>
+          <div class="row">
+             <div class="col-md-6">
+                <div class="panel panel-success">
+                   <div class="panel-heading">
+                      <h3>Enjoy the Variety</h3>
+                   </div>
+                   <div class="panel-body" style="height: 300px;overflow-y: scroll;">
+                      <md-list class="md-dense" flex >
+                          <md-list-item class="md-3-line" ng-repeat="pizza in pizzas" ng-click="selectPizza(pizza);">
+                            <div class="md-list-item-text" layout="column">
+                              <h3><strong>{{ pizza.name }}</strong></h3>
+                              <h4>
+                                <span style="color:darkred;" ng-repeat="ingredient in pizza.ingredients">
+                                  {{ingredient}}<span ng-if="!$last">,</span>
+                                  
+                                </span>
+                              </h4>
+                              <h4>$ {{pizza.price}} </h4>
+                            </div>
+                            <!--<md-icon class="md-secondary" ng-click="selectPizza(pizza);"><span class="glyphicon glyphicon-plus"></span></md-icon>-->
+                          </md-list-item>
+                        </md-list>
+                   </div>
+                </div>
+             </div>
+             <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h3>Your Plate</h3>
+                    </div>
+                    <div class="panel-body" style="height: 250px;overflow-y: scroll;">
+                        <div class="row" ng-repeat="spizza in selectedPizza">
+                            <div class="col-md-4">
+                               <h4>{{spizza.name}}</h4>
+                               <h5>
+                                   <span ng-repeat="ingredient in spizza.ingredients">
+                                     {{ingredient}}<span ng-if="!$last">,</span>
+                                   </span>
+                               </h4>
+                            </div>
+                            <div class="col-md-4">
+                              <h4>Price : $ {{spizza.price}}</h4>
+                              <h5>Discount: {{spizza.discount}} %</h5>
+                            </div>
+                            <div class="col-md-2">
+                               <md-input-container flex class="md-block">
+                                   <label>Qty</label>
+                                   <input  type="number" ng-model="spizza.quantity" min="1" name="quantity" id="quantity" ng-change="calculatePrice();">
+                               </md-input-container>
+                            </div>
+                            <div class="col-md-2">
+                               <md-input-container flex class="md-block">
+                                   <label>Size</label>
+                                   <md-select ng-model="spizza.size">
+                                      <md-option value="small">Small</md-option>
+                                      <md-option value="medium">Medium</md-option>
+                                      <md-option value="large">Large</md-option>
+                                      <md-option value="extra-large">Extra-Large</md-option>
+                                   </md-select>
+                                 </md-input-container>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="panel-footer">
+                       <h4>Total Price : {{price}} Rs. - Discount : {{discount}} Rs. = {{totalPrice}} Rs.</h4>
+                    </div>
+                 </div>   
+             </div>
+          </div>
+          <div class="row">
+              <form name="orderForm">  
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                        <h4>Who's Ordering ?</h4>
+                      </div>
+                      <div class="panel-body">
+                         <div class="row">
+                             <div class="col-md-6">
+                               <md-input-container class="md-block">
+                                 <label>Deliver to :</label>
+                                 <input type="text" ng-model="order.deliverTo" id="deliverTo" name="deliverTo" required>
+                               </md-input-container>
+                             </div>
+                             <div class="col-md-6">
+                               <md-input-container class="md-block">
+                                 <label>contact :</label>
+                                 <input type="text" ng-pattern="/[0-9]/" maxlength="10" ng-model="order.contact" id="contact" name="contact" required>
+                               </md-input-container>
+                             </div>
+                           </div>
+                           <div class="row">
+                             <div class="col-md-12">
+                                 <md-input-container flex class="md-block">
+                                     <label>Address :</label>
+                                     <textarea rows="2" ng-model="order.address" maxlength="50" required></textarea>
+                                   </md-input-container>
+                             </div>
+                           </div>         
+                           <div class="row" align="center">
+                               <md-button class="md-raised md-primary" ng-disabled="orderForm.$invalid" ng-click="placeOrder();">I am hungry Place order</md-button>
+                           </div>
+                      </div>
+                   </div>
+              </form>
+          </div>
+        </md-content>
     </div>
  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
@@ -24,25 +135,64 @@
  <script>
 (function(){
   app = angular.module('PizZap',['ngMaterial']);
-  
+
   app.controller('appController',appController);
 
-  appController.$inject = ['$scope','$http'];
+  appController.$inject = ['$scope','$http','$mdDialog'];
 
-  function appController($scope,$http){
-        $scope.val = "full on";
+  function appController($scope,$http,$mdDialog){
+      $scope.pizzas = [];
+      $scope.selectedPizza = [];
+      $scope.order = {};
+      $scope.price = 0;
+      $scope.discount = 0;
         $scope.getPizzas = function(){
-
           $http({method:'GET',url:'/api/server/pizzas',data:null}).then(function(success){
-            alert(JSON.stringify(success))
             $scope.pizzas = success.data;
           },function(error){
-
+            console.log("error while getting pizzas json!"+error.status);
           })
         }
 
+        $scope.calculatePrice = function(){
+          $scope.price = 0;
+          $scope.discount = 0;
+          alert(typeof $scope.selectedPizza[0].quantity);
+          for(let i=0;i<$scope.selectedPizza.length;i++){
+            if($scope.selectedPizza[i].quantity){
+              $scope.price += ($scope.selectedPizza[i].price*$scope.selectedPizza[i].quantity);
+              if($scope.selectedPizza[i].discount != '-')
+                $scope.discount += (parseInt($scope.selectedPizza[0].discount)/100)*$scope.selectedPizza[i].price*$scope.selectedPizza[i].quantity;
+            }
+          }
+          $scope.totalPrice = $scope.price - $scope.discount;
+        }
+
+        $scope.selectPizza = function(pizza){
+          $scope.selectedPizza.push(pizza);
+          $scope.calculatePrice();
+        }
+
+        $scope.placeOrder = function(){
+          $scope.order.pizzas = $scope.selectedPizza;
+          $http({method:'POST',url:'/api/server/order',data:$scope.order}).then(function(success){
+            alert("Your order has been placed! It will arrive in "+success.data+"min!!");
+            $mdDialog.show(
+              $mdDialog.alert()
+                .title('Order')
+                .textContent('Your order has been placed! It will arrive in '+success.data+'min!!')
+                .ariaLabel()
+                .ok('Thank You!')
+                .targetEvent()
+            );
+            $scope.order = {}
+          },function(error){
+            alert("something went wrong!"+error.status);
+          });
+        }
+
+        
         $scope.getPizzas();
-        alert("its running!!!"+$scope.val);
 
       }
 })();

@@ -2,7 +2,8 @@
   "pizzas":[
         {
           "name": "Margherita",
-          "price": 5,
+          "price": 50,
+          "discount":"10",
           "ingredients": [
             "tomato",
             "mozzarella"
@@ -10,7 +11,8 @@
         },
         {
           "name": "Bufala",
-          "price": 6,
+          "price": 60,
+          "discount":"5",
           "ingredients": [
             "tomato",
             "mozarella di bufala"
@@ -18,7 +20,8 @@
         },
         {
           "name": "Romana",
-          "price": 5,
+          "price": 150,
+          "discount":"-",
           "ingredients": [
             "tomato",
             "mozzarella",
@@ -29,7 +32,18 @@
         },
         {
           "name": "Diavola",
-          "price": 7.5,
+          "price": 75,
+          "discount":"5",
+          "ingredients": [
+            "tomato",
+            "mozzarella",
+            "spicy salami"
+          ]
+        },
+        {
+          "name": "prounger",
+          "price": 90,
+          "discount":"10",
           "ingredients": [
             "tomato",
             "mozzarella",
@@ -38,10 +52,21 @@
         },
         {
           "name": "Pizza Bianca",
-          "price": 5,
+          "price": 120,
+          "discount":"8",
           "ingredients": [
             "mozzarella",
             "oregano"
+          ]
+        },
+        {
+          "name": "Pizza chilly",
+          "price": 180,
+          "discount":"12",
+          "ingredients": [
+            "chilly",
+            "oregano",
+            "cheese"
           ]
         }
       ]
