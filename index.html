@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PizZap</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+</head>
+<body ng-app="PizZap">
+    <div class="container-fluid" ng-controller="appController">
+        <p>these are pizzas: {{pizzas}}</p>
+    
+    </div>
+ <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+
+ <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+ <script>
+(function(){
+  app = angular.module('PizZap',['ngMaterial']);
+  
+  app.controller('appController',appController);
+
+  appController.$inject = ['$scope','$http'];
+
+  function appController($scope,$http){
+        $scope.val = "full on";
+        $scope.getPizzas = function(){
+
+          $http({method:'GET',url:'/api/server/pizzas',data:null}).then(function(success){
+            alert(JSON.stringify(success))
+            $scope.pizzas = success.data;
+          },function(error){
+
+          })
+        }
+
+        $scope.getPizzas();
+        alert("its running!!!"+$scope.val);
+
+      }
+})();
+ </script>
+</body>
+</html>
