@@ -23,48 +23,59 @@
              <div class="col-md-6">
                 <div class="panel panel-success">
                    <div class="panel-heading">
-                      <h3>Enjoy the Variety</h3>
-                      <p>Click on the item to add in the plate.</p>
+                      <h4><strong>Enjoy the Variety</strong></h4>
                    </div>
-                   <div class="panel-body" style="height: 300px;overflow-y: scroll;">
-                      <div class="row">
-                         <div class="col-md-6"></div>
-                      </div>
-                      <md-list class="md-dense" flex>
-                          <md-list-item class="md-3-line" ng-repeat="pizza in pizzas" ng-click="selectPizza(pizza);">
-                            <div class="md-list-item-text" layout="column">
-                              <h3><strong>{{ pizza.name }}</strong></h3>
-                              <h4>
+                   <div class="panel-body" style="height: 250px;overflow-y: scroll;">
+                      <div class="row" ng-repeat="pizza in pizzas">
+                         <div class="col-md-5">
+                            <h5><strong>{{ pizza.name }}</strong></h5>
+                            <h6>
                                 <span style="color:darkred;" ng-repeat="ingredient in pizza.ingredients">
-                                  {{ingredient}}<span ng-if="!$last">,</span>
-                                </span>
-                              </h4>
-                              <h4>$ {{pizza.price}} </h4>
-                            </div>
-                            <!--<md-icon class="md-secondary" ng-click="selectPizza(pizza);"><span class="glyphicon glyphicon-plus"></span></md-icon>-->
-                          </md-list-item>
-                        </md-list>
+                                    {{ingredient}}<span ng-if="!$last">,</span>
+                                </span> 
+                            </h6>
+                         </div>
+                         <div class="col-md-5">
+                            <h5><strong>Price : {{pizza.price}} Rs.</strong></h5>
+                            <h6 class="label label-warning">Discount : {{pizza.discount}} %</h5>
+                         </div>
+                         <div class="col-md-2" style="vertical-align: middle;">
+                              <a ng-click="selectPizza(pizza);">
+                                  <h4><span class="glyphicon glyphicon-plus" data-toggle="tooltip" title="Add me in the plate!" aria-hidden="true"></span></h4>
+                              </a>
+                         </div>
+                          <hr/>
+                      </div>
+                   </div>
+                   <div class="panel-footer">
+                      <h4><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> &nbsp; Click on the [+] to add in the plate.</h4>
                    </div>
                 </div>
              </div>
              <div class="col-md-6">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                      <h3>Your Plate</h3>
+                      <h4>
+                        <strong>Your Plate</strong>
+                        <a style="float: right;" ng-click="clearPlate();">
+                            <span class="glyphicon glyphicon-remove" data-toggle="tooltip" title="empty my plate!" aria-hidden="true">
+                        </a>
+                      </h4>
                     </div>
                     <div class="panel-body" style="height: 250px;overflow-y: scroll;">
+                        <p class="alert alert-warning" ng-if="selectedPizza.length == 0">Your plate is empty please add Pizzas here!</p>
                         <div class="row" ng-repeat="spizza in selectedPizza">
                             <div class="col-md-4">
                                <h5><strong>{{spizza.name}}</strong></h5>
                                <h6>
-                                   <span ng-repeat="ingredient in spizza.ingredients">
-                                     {{ingredient}}<span ng-if="!$last">,</span>
-                                   </span>
-                               </h6>
+                                  <span ng-repeat="ingredient in spizza.ingredients">
+                                      {{ingredient}} <span ng-if="!$last">,</span>
+                                  </span>
+                               </h6> 
                             </div>
                             <div class="col-md-3">
                               <h5>Price : {{spizza.price}} Rs.</h5>
-                              <h6>Discount: {{spizza.discount}} %</h6>
+                              <h6 class="label label-warning">Discount: {{spizza.discount}} %</h6>
                             </div>
                             <div class="col-md-2">
                                <md-input-container flex class="md-block">
@@ -77,7 +88,7 @@
                                    <label>Size</label>
                                    <md-select ng-model="spizza.size">
                                       <md-option value="small">Small</md-option>
-                                      <md-option value="medium">Medium</md-option>
+                                      <md-option selected value="medium">Medium</md-option>
                                       <md-option value="large">Large</md-option>
                                       <md-option value="extra-large">Extra-Large</md-option>
                                    </md-select>
@@ -96,7 +107,7 @@
               <form name="orderForm">  
                   <div class="panel panel-default">
                       <div class="panel-heading">
-                        <h4>Who's Ordering ?</h4>
+                        <h5><strong>Who's Ordering ?</strong></h5>
                       </div>
                       <div class="panel-body">
                          <div class="row">
@@ -148,6 +159,10 @@
       $scope.order = {};
       $scope.price = 0;
       $scope.discount = 0;
+
+      /**
+      *Get Pizzas object from server
+      */
         $scope.getPizzas = function(){
           $http({method:'GET',url:'/api/server/pizzas',data:null}).then(function(success){
             $scope.pizzas = success.data;
@@ -156,10 +171,14 @@
           })
         }
 
+
+        /**
+        * Calculate price after adding pizza in the plate
+        */
         $scope.calculatePrice = function(){
           $scope.price = 0;
           $scope.discount = 0;
-          alert(typeof $scope.selectedPizza[0].quantity);
+          
           for(let i=0;i<$scope.selectedPizza.length;i++){
             if($scope.selectedPizza[i].quantity){
               $scope.price += ($scope.selectedPizza[i].price*$scope.selectedPizza[i].quantity);
@@ -170,33 +189,67 @@
           $scope.totalPrice = $scope.price - $scope.discount;
         }
 
-        $scope.selectPizza = function(pizza){
-          $scope.selectedPizza.push(pizza);
-          $scope.calculatePrice();
+        $scope.checkDuplication = function(pizza){
+          for(let i=0;i<$scope.selectedPizza.length;i++){
+              if($scope.selectedPizza[i].name == pizza.name){
+                  $mdDialog.show(
+                    $mdDialog.alert()
+                      .title('Item Repeated')
+                      .textContent('Looks like you have added '+pizza.name+' again, Instead change the quantity !')
+                      .ariaLabel()
+                      .ok('Got it!')
+                      .targetEvent()
+                  );
+                  return true;
+              }
+          }
         }
 
+        /**
+        * Push pizza in the plate and calculate price
+        */
+        $scope.selectPizza = function(pizza){
+          var duplicate = $scope.checkDuplication(pizza); 
+          if(!duplicate || $scope.selectedPizza.length == 0){
+            $scope.selectedPizza.push(pizza);
+            $scope.calculatePrice();
+          }
+        }
+
+        /**
+        * clear the plate
+        */
+        $scope.clearPlate = function(){
+            $scope.selectedPizza = [];
+            $scope.order = {};
+            $scope.price = 0;
+            $scope.discount = 0;
+            $scope.totalPrice = 0;
+        }
+
+        /**
+        * Place the order 
+        */
         $scope.placeOrder = function(){
           $scope.order.pizzas = $scope.selectedPizza;
           $scope.order.totalPrice = $scope.totalPrice;
           $http({method:'POST',url:'/api/server/order',data:$scope.order}).then(function(success){
+            console.log(JSON.stringify(success.data));
             $mdDialog.show(
               $mdDialog.alert()
                 .title('Order')
-                .textContent('Your order has been placed! It will arrive in '+success.data+'min!!')
+                .textContent('Your order has been placed! It will arrive in '+success.data.arrivalInMin+'min!!')
                 .ariaLabel()
                 .ok('Thank You!')
                 .targetEvent()
             );
-            $scope.order = {}
-            $scope.selectedPizza = {};
+            $scope.clearPlate();
           },function(error){
             alert("something went wrong!"+error.status);
           });
         }
 
-        
         $scope.getPizzas();
-
       }
 })();
  </script>
